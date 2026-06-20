@@ -8,7 +8,9 @@ const state = {
   totalPages: 0,
   scale: 1.0,
   baseScale: 1.0,
+  baseScaleInitialized: false,
   pdfBytes: null,
+  originalPdfBytes: null,
   formFields: {},
   signatures: [],
   pageViewport: null,
@@ -85,6 +87,7 @@ function handleFileUpload(e) {
   fileReader.onload = function(event) {
     const typedArray = new Uint8Array(event.target.result);
     state.pdfBytes = typedArray;
+    state.originalPdfBytes = new Uint8Array(typedArray);
     loadPdf(typedArray);
   };
   fileReader.readAsArrayBuffer(file);
@@ -96,6 +99,7 @@ async function loadSamplePdf() {
     const arrayBuffer = await response.arrayBuffer();
     const typedArray = new Uint8Array(arrayBuffer);
     state.pdfBytes = typedArray;
+    state.originalPdfBytes = new Uint8Array(typedArray);
     loadPdf(typedArray);
   } catch (error) {
     console.error('加载示例PDF失败:', error);
@@ -111,6 +115,7 @@ async function loadPdf(data) {
     state.currentPage = 1;
     state.formFields = {};
     state.signatures = [];
+    state.baseScaleInitialized = false;
 
     elements.totalPages.textContent = state.totalPages;
     elements.currentPage.textContent = state.currentPage;
@@ -132,8 +137,12 @@ async function renderPage(pageNum) {
   
   const containerWidth = elements.pdfContainer.clientWidth - 40;
   const viewport = page.getViewport({ scale: 1 });
-  state.baseScale = Math.min(containerWidth / viewport.width, 1.5);
-  state.scale = state.baseScale;
+  
+  if (!state.baseScaleInitialized) {
+    state.baseScale = Math.min(containerWidth / viewport.width, 1.5);
+    state.scale = state.baseScale;
+    state.baseScaleInitialized = true;
+  }
 
   const scaledViewport = page.getViewport({ scale: state.scale });
   state.pageViewport = scaledViewport;
@@ -441,6 +450,7 @@ function confirmSignature() {
     height: 75,
   };
   
+  state.signatures = state.signatures.filter(s => s.page !== state.currentPage);
   state.signatures.push(signature);
   closeSignatureModal();
   renderSignatures();
@@ -579,12 +589,27 @@ function removeSignature(id) {
 }
 
 async function flattenAndDownload() {
-  if (!state.pdfBytes) return;
+  if (!state.originalPdfBytes && !state.pdfBytes) {
+    alert('请先加载PDF文件');
+    return;
+  }
 
   try {
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
-    const pdfDoc = await PDFDocument.load(state.pdfBytes);
+    let pdfData = state.originalPdfBytes || state.pdfBytes;
+    if (!(pdfData instanceof Uint8Array)) {
+      pdfData = new Uint8Array(pdfData);
+    }
+
+    const header = String.fromCharCode(pdfData[0], pdfData[1], pdfData[2], pdfData[3], pdfData[4]);
+    if (header !== '%PDF-') {
+      console.error('PDF header invalid:', header);
+      alert('PDF数据无效，请重新上传文件');
+      return;
+    }
+
+    const pdfDoc = await PDFDocument.load(pdfData);
 
     const form = pdfDoc.getForm();
     const fields = form.getFields();
@@ -596,7 +621,20 @@ async function flattenAndDownload() {
           const field = form.getField(fieldData.fieldName);
           if (field) {
             if (fieldData.fieldType === 'Tx') {
-              field.setText(fieldData.value || '');
+              try {
+                field.setText(fieldData.value || '');
+              } catch (encodeErr) {
+                console.log('字段包含不支持的字符，已跳过:', fieldData.fieldName, encodeErr.message);
+                try {
+                  const asciiValue = fieldData.value.replace(/[^\x00-\x7F]/g, '?');
+                  if (asciiValue !== fieldData.value) {
+                    field.setText(asciiValue);
+                    console.log('已使用 ASCII 替代值:', asciiValue);
+                  }
+                } catch (fallbackErr) {
+                  console.log('替代值也失败，跳过该字段');
+                }
+              }
             } else if (fieldData.fieldType === 'Btn') {
               if (fieldData.value === 'Yes' || fieldData.value === true) {
                 field.check();
@@ -616,8 +654,7 @@ async function flattenAndDownload() {
       const pageHeight = page.getHeight();
       const pageWidth = page.getWidth();
 
-      const viewport = state.pageViewport;
-      const scaleFactor = pageWidth / viewport.width;
+      const scaleFactor = 1 / state.scale;
 
       const sigImage = await pdfDoc.embedPng(sig.dataUrl);
 
