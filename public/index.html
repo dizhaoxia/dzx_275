@@ -23,7 +23,10 @@
           <span id="currentPage">0</span> / <span id="totalPages">0</span>
         </span>
         <button class="btn" id="nextPage" disabled>下一页</button>
+        <button class="btn btn-small" id="undoBtn" title="撤销" disabled>↶</button>
+        <button class="btn btn-small" id="redoBtn" title="重做" disabled>↷</button>
         <button class="btn btn-secondary" id="signatureBtn">手写签名</button>
+        <button class="btn btn-warning" id="validateBtn" disabled>校验表单</button>
         <button class="btn btn-success" id="flattenBtn" disabled>扁平化并下载</button>
       </div>
       <div class="toolbar-right">
@@ -32,6 +35,10 @@
         </span>
         <button class="btn btn-small" id="zoomOut">−</button>
         <button class="btn btn-small" id="zoomIn">+</button>
+        <select class="engine-select" id="engineSelect" title="渲染引擎">
+          <option value="pdfjs">PDF.js</option>
+          <option value="pdfium">PDFium</option>
+        </select>
       </div>
     </header>
 
@@ -52,25 +59,102 @@
 
     <div class="signature-modal" id="signatureModal" style="display: none;">
       <div class="modal-overlay" id="modalOverlay"></div>
-      <div class="modal-content">
+      <div class="modal-content signature-modal-large">
         <div class="modal-header">
-          <h2>手写签名</h2>
+          <h2>签名</h2>
           <button class="modal-close" id="modalClose">&times;</button>
         </div>
         <div class="modal-body">
-          <div class="signature-canvas-container">
-            <canvas id="signatureCanvas" width="600" height="250"></canvas>
+          <div class="signature-tabs">
+            <button class="tab-btn active" data-tab="draw">手绘签名</button>
+            <button class="tab-btn" data-tab="upload">上传图片</button>
+            <button class="tab-btn" data-tab="text">文本签名</button>
           </div>
-          <div class="signature-tools">
-            <button class="btn" id="clearSignature">清除</button>
-            <button class="btn" id="undoSignature">撤销</button>
-            <div class="pen-size-group">
-              <label>画笔粗细:</label>
-              <input type="range" id="penSize" min="1" max="10" value="3">
+          
+          <div class="tab-content" id="tab-draw">
+            <div class="signature-canvas-container">
+              <canvas id="signatureCanvas" width="600" height="250"></canvas>
             </div>
-            <div class="pen-color-group">
-              <label>颜色:</label>
-              <input type="color" id="penColor" value="#000000">
+            <div class="signature-tools">
+              <button class="btn" id="clearSignature">清除</button>
+              <button class="btn" id="undoSignature">撤销</button>
+              <div class="pen-size-group">
+                <label>笔触粗细:</label>
+                <input type="range" id="penSize" min="1" max="20" value="3">
+                <span id="penSizeValue">3px</span>
+              </div>
+              <div class="pen-color-group">
+                <label>笔触颜色:</label>
+                <div class="color-presets">
+                  <button class="color-preset active" style="background-color: #000000;" data-color="#000000"></button>
+                  <button class="color-preset" style="background-color: #1677ff;" data-color="#1677ff"></button>
+                  <button class="color-preset" style="background-color: #ff4d4f;" data-color="#ff4d4f"></button>
+                  <button class="color-preset" style="background-color: #52c41a;" data-color="#52c41a"></button>
+                  <button class="color-preset" style="background-color: #722ed1;" data-color="#722ed1"></button>
+                </div>
+                <input type="color" id="penColor" value="#000000">
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="tab-upload" style="display: none;">
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="signatureImageInput" accept="image/*" hidden>
+              <div class="upload-placeholder">
+                <div class="upload-icon">📁</div>
+                <p>点击或拖拽图片到此处上传</p>
+                <p class="hint">支持 PNG、JPG、SVG 格式，建议使用透明背景</p>
+              </div>
+              <img id="uploadedSignaturePreview" style="display: none;" alt="上传的签名预览">
+            </div>
+          </div>
+          
+          <div class="tab-content" id="tab-text" style="display: none;">
+            <div class="text-signature-container">
+              <div class="text-input-group">
+                <label>输入签名文本:</label>
+                <input type="text" id="signatureTextInput" placeholder="请输入您的姓名" maxlength="20">
+              </div>
+              <div class="font-select-group">
+                <label>选择手写字体:</label>
+                <select id="handwritingFontSelect">
+                  <option value="cursive">手写体 1 (Cursive)</option>
+                  <option value="brush">手写体 2 (Brush)</option>
+                  <option value="elegant">手写体 3 (Elegant)</option>
+                  <option value="modern">手写体 4 (Modern)</option>
+                </select>
+              </div>
+              <div class="text-signature-preview">
+                <canvas id="textSignatureCanvas" width="600" height="200"></canvas>
+              </div>
+              <div class="signature-tools">
+                <div class="pen-size-group">
+                  <label>字体大小:</label>
+                  <input type="range" id="textSignatureSize" min="24" max="120" value="64">
+                </div>
+                <div class="pen-color-group">
+                  <label>字体颜色:</label>
+                  <input type="color" id="textSignatureColor" value="#000000">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="signature-adjust-panel" id="signatureAdjustPanel" style="display: none;">
+            <h4>位置调整</h4>
+            <div class="adjust-controls">
+              <div class="adjust-group">
+                <label>缩放: <span id="adjustScaleValue">100%</span></label>
+                <input type="range" id="adjustScale" min="10" max="300" value="100">
+              </div>
+              <div class="adjust-group">
+                <label>旋转: <span id="adjustRotateValue">0°</span></label>
+                <input type="range" id="adjustRotate" min="-180" max="180" value="0">
+              </div>
+              <div class="adjust-group">
+                <label>不透明度: <span id="adjustOpacityValue">100%</span></label>
+                <input type="range" id="adjustOpacity" min="10" max="100" value="100">
+              </div>
             </div>
           </div>
         </div>
@@ -80,6 +164,8 @@
         </div>
       </div>
     </div>
+    
+    <div class="validation-toast" id="validationToast"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>

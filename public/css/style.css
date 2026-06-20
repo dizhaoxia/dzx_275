@@ -108,10 +108,36 @@ body {
   color: #fff;
 }
 
+.btn-warning {
+  background-color: #faad14;
+  border-color: #faad14;
+  color: #fff;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #ffc53d;
+  border-color: #ffc53d;
+  color: #fff;
+}
+
 .btn-small {
   padding: 4px 10px;
   font-size: 16px;
   min-width: 32px;
+}
+
+.engine-select {
+  padding: 4px 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.engine-select:hover {
+  border-color: #4096ff;
 }
 
 .page-info {
@@ -223,6 +249,91 @@ body {
   accent-color: #1677ff;
 }
 
+.form-field input[type="radio"] {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  accent-color: #1677ff;
+}
+
+.form-field select {
+  width: 100%;
+  height: 100%;
+  padding: 2px 4px;
+  font-size: inherit;
+  font-family: inherit;
+  border: 1px solid #4096ff;
+  border-radius: 2px;
+  background-color: rgba(64, 150, 255, 0.1);
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.form-field select:focus {
+  border-color: #1677ff;
+  background-color: rgba(64, 150, 255, 0.2);
+}
+
+.form-field select[multiple] {
+  overflow-y: auto;
+}
+
+.form-field .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.form-field .radio-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.form-field .radio-option input[type="radio"] {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.form-field.required::after {
+  content: '*';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  color: #ff4d4f;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.form-field.error input,
+.form-field.error select,
+.form-field.error textarea {
+  border-color: #ff4d4f;
+  background-color: rgba(255, 77, 79, 0.1);
+}
+
+.form-field .error-message {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 2px;
+  padding: 2px 6px;
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 11px;
+  border-radius: 2px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
 .signatures-layer {
   position: absolute;
   top: 0;
@@ -237,6 +348,15 @@ body {
   pointer-events: auto;
   cursor: move;
   user-select: none;
+  transition: box-shadow 0.2s ease;
+}
+
+.signature-item:hover {
+  box-shadow: 0 0 0 2px #1677ff;
+}
+
+.signature-item.selected {
+  box-shadow: 0 0 0 2px #1677ff;
 }
 
 .signature-item img {
@@ -244,6 +364,8 @@ body {
   max-width: 200px;
   max-height: 100px;
   pointer-events: none;
+  width: 100%;
+  height: 100%;
 }
 
 .signature-item .signature-delete {
@@ -260,6 +382,7 @@ body {
   text-align: center;
   cursor: pointer;
   display: none;
+  z-index: 10;
 }
 
 .signature-item:hover .signature-delete {
@@ -294,8 +417,14 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   width: 680px;
   max-width: 90vw;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.signature-modal-large {
+  width: 780px;
 }
 
 .modal-header {
@@ -304,6 +433,7 @@ body {
   justify-content: space-between;
   padding: 16px 24px;
   border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -327,6 +457,46 @@ body {
 
 .modal-body {
   padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.signature-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #1677ff;
+}
+
+.tab-btn.active {
+  color: #1677ff;
+  border-bottom-color: #1677ff;
+  font-weight: 500;
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .signature-canvas-container {
@@ -363,6 +533,7 @@ body {
 
 .signature-tools input[type="range"] {
   width: 80px;
+  cursor: pointer;
 }
 
 .signature-tools input[type="color"] {
@@ -372,6 +543,184 @@ body {
   border-radius: 4px;
   cursor: pointer;
   padding: 0;
+  background: none;
+}
+
+.color-presets {
+  display: flex;
+  gap: 6px;
+}
+
+.color-preset {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #d9d9d9;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease;
+}
+
+.color-preset:hover {
+  transform: scale(1.1);
+}
+
+.color-preset.active {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+}
+
+.upload-area {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+  border-color: #1677ff;
+  background-color: rgba(22, 119, 255, 0.05);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  font-size: 48px;
+}
+
+.upload-placeholder p {
+  font-size: 14px;
+  color: #333;
+}
+
+.upload-placeholder .hint {
+  font-size: 12px;
+  color: #999;
+}
+
+#uploadedSignaturePreview {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.text-signature-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.text-input-group,
+.font-select-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.text-input-group label,
+.font-select-group label {
+  font-size: 14px;
+  color: #333;
+  min-width: 100px;
+}
+
+.text-input-group input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.text-input-group input:focus {
+  border-color: #1677ff;
+}
+
+.font-select-group select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.font-select-group select:focus {
+  border-color: #1677ff;
+}
+
+.text-signature-preview {
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  background-color: #fafafa;
+  overflow: hidden;
+}
+
+#textSignatureCanvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+  background-color: #fff;
+}
+
+.signature-adjust-panel {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.signature-adjust-panel h4 {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.adjust-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adjust-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adjust-group label {
+  font-size: 13px;
+  color: #666;
+  min-width: 120px;
+}
+
+.adjust-group input[type="range"] {
+  flex: 1;
+  cursor: pointer;
+}
+
+.adjust-group span {
+  font-size: 13px;
+  color: #333;
+  min-width: 50px;
+  text-align: right;
 }
 
 .modal-footer {
@@ -380,6 +729,107 @@ body {
   gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.validation-toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 16px 20px;
+  z-index: 2000;
+  max-width: 400px;
+  max-height: 60vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.validation-toast.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.validation-toast.success {
+  border-left: 4px solid #52c41a;
+}
+
+.validation-toast.error {
+  border-left: 4px solid #ff4d4f;
+}
+
+.validation-toast h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.validation-toast.success h3 {
+  color: #52c41a;
+}
+
+.validation-toast.error h3 {
+  color: #ff4d4f;
+}
+
+.validation-toast ul {
+  list-style: none;
+  padding: 0;
+}
+
+.validation-toast li {
+  padding: 6px 0;
+  font-size: 13px;
+  color: #666;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.validation-toast li:last-child {
+  border-bottom: none;
+}
+
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 20px 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 3000;
+  display: none;
+}
+
+.loading-indicator.show {
+  display: block;
+}
+
+.loading-indicator::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -399,7 +849,25 @@ body {
     width: 95vw;
   }
   
+  .signature-modal-large {
+    width: 95vw;
+  }
+  
   #signatureCanvas {
     height: 200px;
+  }
+  
+  .signature-tools {
+    justify-content: center;
+  }
+  
+  .adjust-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .adjust-group label {
+    min-width: auto;
   }
 }
