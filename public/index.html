@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF表单填写与签名系统</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <h1>PDF表单填写与签名</h1>
+      </div>
+      <div class="toolbar-center">
+        <label class="btn btn-primary">
+          <input type="file" id="fileInput" accept=".pdf" hidden>
+          上传PDF
+        </label>
+        <button class="btn" id="loadSampleBtn">加载示例</button>
+        <button class="btn" id="prevPage" disabled>上一页</button>
+        <span class="page-info">
+          <span id="currentPage">0</span> / <span id="totalPages">0</span>
+        </span>
+        <button class="btn" id="nextPage" disabled>下一页</button>
+        <button class="btn btn-secondary" id="signatureBtn">手写签名</button>
+        <button class="btn btn-success" id="flattenBtn" disabled>扁平化并下载</button>
+      </div>
+      <div class="toolbar-right">
+        <span class="zoom-info">
+          缩放: <span id="zoomLevel">100</span>%
+        </span>
+        <button class="btn btn-small" id="zoomOut">−</button>
+        <button class="btn btn-small" id="zoomIn">+</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="pdf-container" id="pdfContainer">
+        <div class="pdf-placeholder" id="pdfPlaceholder">
+          <div class="placeholder-icon">📄</div>
+          <p>请上传一个PDF文件开始</p>
+          <p class="hint">支持 AcroForm 表单填写和手写签名</p>
+        </div>
+        <div class="pdf-wrapper" id="pdfWrapper" style="display: none;">
+          <canvas id="pdfCanvas"></canvas>
+          <div class="form-fields-layer" id="formFieldsLayer"></div>
+          <div class="signatures-layer" id="signaturesLayer"></div>
+        </div>
+      </div>
+    </main>
+
+    <div class="signature-modal" id="signatureModal" style="display: none;">
+      <div class="modal-overlay" id="modalOverlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>手写签名</h2>
+          <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="signature-canvas-container">
+            <canvas id="signatureCanvas" width="600" height="250"></canvas>
+          </div>
+          <div class="signature-tools">
+            <button class="btn" id="clearSignature">清除</button>
+            <button class="btn" id="undoSignature">撤销</button>
+            <div class="pen-size-group">
+              <label>画笔粗细:</label>
+              <input type="range" id="penSize" min="1" max="10" value="3">
+            </div>
+            <div class="pen-color-group">
+              <label>颜色:</label>
+              <input type="color" id="penColor" value="#000000">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelSignature">取消</button>
+          <button class="btn btn-primary" id="confirmSignature">确认签名</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="/node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

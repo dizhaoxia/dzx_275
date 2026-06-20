@@ -1,0 +1,18 @@
+{
+  "name": "dzx_275",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.0.227"
+  }
+}
